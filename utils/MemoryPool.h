@@ -7,7 +7,6 @@
 
 namespace core
 {
-
 	template <typename TObject, std::size_t TInitSize =100>
 	class MemoryPool
 	{
@@ -62,7 +61,7 @@ namespace core
 			auto* lMemory = mFreeMemVctr.back();
 			mFreeMemVctr.pop_back();
 
-			return ObjectPtr(new (lMemory) TObject(std::forward(lObjectArgs), [](TObject* lObjPtr)
+			return ObjectPtr(new (lMemory) TObject(std::forward(lObjectArgs)..., [this](TObject* lObjPtr)
 								{
 									//destructor call is required
 									lObjPtr->~TObject();
