@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.2.3)
   
 #-------------DEPENDENCIES ---------------------
-set(TOOLS_HOME "/usr/local/Cellar")
+if(DEFINED ENV{TOOLS_HOME})
+  set(TOOLS_HOME "$ENV{TOOLS_HOME}")
+else()
+  set(TOOLS_HOME "/usr/local/Cellar")
+endif()
+
 message(STATUS "TOOLS_HOME:      ${TOOLS_HOME}")
 #-------------DEPENDENCIES---------------------
 
@@ -30,14 +35,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} ${COMMON_WARN}")
 
 include_directories(
  ${CMAKE_CURRENT_SOURCE_DIR}
- "${TOOLS_HOME}/boost/1.66.0/include"
+ "${TOOLS_HOME}/include"
+ "${TOOLS_HOME}/include/googletest/include"
 )
 
-#-------------HEADERS---------------------
+#-------------LINKER---------------------
 
 
 link_directories(
-  "${TOOLS_HOME}/boost/1.66.0/lib"
+  "${TOOLS_HOME}/lib64"
 )
 
 #-------------UNIT TESTS---------------------
@@ -51,6 +57,7 @@ endmacro()
 
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
-add_subdirectory(utils)
+add_subdirectory(containers)
 add_subdirectory(logger)
+add_subdirectory(utils)
 
