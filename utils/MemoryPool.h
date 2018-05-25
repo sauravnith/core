@@ -52,7 +52,9 @@ namespace core
 		template<typename... Args>
 		ObjectPtr allocateObject(Args&&... lObjectArgs)
 		{
-			//once all memory is taken, allocate new memory for object
+			//once all memory is taken, increase available by memory slots
+		    // vector will increase its size by reallocating memory . New available slots will depend on load factor.
+		    //So filling up the pool will cause heap allocation for vector an obect
 			if(mFreeMemVctr.empty())
 			{
 				mFreeMemVctr.emplace_back(reinterpret_cast<TObject*>(std::malloc(sizeof(TObject))));
@@ -61,15 +63,19 @@ namespace core
 			auto* lMemory = mFreeMemVctr.back();
 			mFreeMemVctr.pop_back();
 
-			return ObjectPtr(new (lMemory) TObject(std::forward(lObjectArgs)..., [this](TObject* lObjPtr)
+			return ObjectPtr(new (lMemory) TObject(std::forward<Args>(lObjectArgs)...), [this](TObject* lObjPtr)
 								{
 									//destructor call is required
 									lObjPtr->~TObject();
 
 									mFreeMemVctr.push_back(lObjPtr);
 								}
-							));
+							);
 		}
+
+		size_t getCapacity()const { return mFreeMemVctr.capacity();}
+
+		size_t getAvailable()const { return mFreeMemVctr.size(); }
 
 	private:
 		std::vector<TObject*> mFreeMemVctr;
