@@ -19,3 +19,22 @@ target_link_libraries(RingBufferTest
 )
 
 add_test(NAME RingBufferTest COMMAND RingBufferTest)
+
+################### MPSC Queue TEST ###############################################
+add_executable(MpscQueueTest test/MpscQueueTest.cpp)
+
+target_link_libraries(MpscQueueTest
+  libgtest_main.a
+  libgtest.a
+  pthread
+)
+
+add_test(NAME MpscQueueTest COMMAND MpscQueueTest)
+
+################### Performance Metric ###############################################
+add_executable(Perf test/Performance.cpp)
+
+target_link_libraries(Perf
+  pthread
+)
+

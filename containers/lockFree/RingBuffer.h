@@ -7,10 +7,15 @@ namespace core
     //used for message passing between two threads : spsc queue
     // On x86(strong memory model) will generate memory fence after every store
     // Use accquire release semantics to produce minimal fencing
-    template<typename TMsg, size_t TSize = 10>
+    template<typename TMsg, size_t TSize = 16>
     class RingBuffer
     {
     public:
+        static_assert((TSize !=0),"Buffer size cannot be zero");
+
+        //having buffer size power 2 allows us to use cheaper & operation instead of modulo
+        static_assert(((TSize & (TSize -1)) == 0), "BufferSize should be power of 2" );
+
         RingBuffer()=default;
         //atomics are moveable
         RingBuffer(const RingBuffer& arBuffer)=delete;
@@ -31,18 +36,18 @@ namespace core
             return *this;
         }
 
-        friend void swap(RingBuffer& arRHS, RingBuffer& arLHS)
+        friend void swap(RingBuffer& arRHS, RingBuffer& arLHS)noexcept
         {
             std::swap(arRHS.mArray, arLHS.mArray);
             arRHS.mReadIndex = arLHS.mReadIndex;
             arRHS.mWriteIndex = arLHS.mWriteIndex;
         }
 
-        void push(TMsg& arMsg)
+        void push(const TMsg& arMsg)
         {
             TMsg lMsg(arMsg);
 
-            emplace_push(std::move(arMsg));
+            emplace_push(std::move(lMsg));
         }
 
         void emplace_push(TMsg&& arMsg)
@@ -58,7 +63,7 @@ namespace core
                 throw std::runtime_error("RingBuffer: No space available");
             }
 
-            mArray[lWriteIndex % capacity() ] = std::move(arMsg);
+            mArray[lWriteIndex & mBitMask ] = std::move(arMsg);
 
             mWriteIndex.store(lWriteIndex + 1 , std::memory_order_release);
         }
@@ -75,7 +80,7 @@ namespace core
                 throw std::runtime_error("RingBuffer: Empty");
             }
 
-            TMsg lMsg(std::move(mArray[lReadIndex % capacity() ]));
+            TMsg lMsg(std::move(mArray[lReadIndex & mBitMask ]));
 
             mReadIndex.store(lReadIndex + 1 , std::memory_order_release);
 
@@ -95,7 +100,7 @@ namespace core
                 throw std::runtime_error("RingBuffer: Empty");
             }
 
-            arFunc(mArray[lReadIndex % capacity() ]);
+            arFunc(mArray[lReadIndex & mBitMask ]);
 
             mReadIndex.store(lReadIndex + 1 , std::memory_order_release);
         }
@@ -111,15 +116,16 @@ namespace core
         bool full()const { return size() == capacity(); }
 
     private:
+        constexpr static size_t mBitMask = TSize -1;
+
         constexpr static int CACHE_LINE_SIZE{64};// on x86
 
+        //aligning to prevent false sharing
         alignas(CACHE_LINE_SIZE)std::array<TMsg,TSize>mArray;
 
-        __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int> mReadIndex{0};
+        alignas(CACHE_LINE_SIZE)std::atomic<int> mReadIndex{0};
 
-        __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int> mWriteIndex{0};
+        alignas(CACHE_LINE_SIZE)std::atomic<int> mWriteIndex{0};
 
     };
 }

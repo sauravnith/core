@@ -66,7 +66,7 @@ TEST(RingBufferTest,TestCase1)
 
 TEST(RingBufferTest,TestCase2)
 {
-    core::RingBuffer<TestMsg, 5> mRingBuffer;
+    core::RingBuffer<TestMsg, 4> mRingBuffer;
 
     int lMaxCount{10};
 
@@ -125,6 +125,6 @@ TEST(RingBufferTest,TestCase2)
 
     EXPECT_EQ(mRingBuffer.size(),0);
     EXPECT_EQ(mRingBuffer.empty(),true);
-    EXPECT_EQ(mRingBuffer.capacity(),5);
+    EXPECT_EQ(mRingBuffer.capacity(),4);
 
 }
