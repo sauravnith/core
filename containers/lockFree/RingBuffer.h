@@ -30,7 +30,10 @@ namespace core
             return *this;
         }
 
-     /*   void put(TMsg& theMsg);
+        void put(TMsg& theMsg)
+        {
+
+        }
 
         TMsg get();
 
@@ -48,7 +51,7 @@ namespace core
 
         bool empty()const { return mWriteIndex == mReadIndex; }
         bool full()const { return size() == capacity(); }
-*/
+
     private:
         constexpr int CACHE_LINE_SIZE = 64;//in bytes on x86
 
@@ -56,10 +59,10 @@ namespace core
         std::array<TMsg,TSize>mArray;
 
         __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int> mReadIndex;
+        std::atomic<int32_t> mReadIndex;
 
         __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int> mWriteIndex;
+        std::atomic<int32_t> mWriteIndex;
     };
 }
 
