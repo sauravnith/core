@@ -5,6 +5,7 @@ struct TestMsg
 {
     int mIndex;
     int mVal;
+    //TODO add constructor and destructor and check operator = behaviour
 };
 
 

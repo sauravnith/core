@@ -57,7 +57,7 @@ endmacro()
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_BINARY_DIR}/bin")
 
 add_subdirectory(containers)
-add_subdirectory(logger)
 add_subdirectory(utils)
 add_subdirectory(transport)
 add_subdirectory(log)
+add_subdirectory(time)
