@@ -1,54 +1,40 @@
-/*
- * Logger.h
- *
- *  Created on: Apr 14, 2018
- *      Author: sauravsharma
- */
-
 #pragma once
-#include "LoggerI.h"
-#include <sstream>
+#include"LogDefs.h"
+#include"Sink.h"
+#include<array>
 
 namespace core
 {
-	class Logger
-	{
-	public:
+    class Logger
+    {
+    public:
+        static Logger& instance(){
+            static Logger gLogger;
+            return gLogger;
+        }
 
-		enum LogLevel
-		{
-			DEBUG = 1,
-			INFO,
-			WARN,
-			ERROR
-		};
+        void setLogLevel(LogLevel arLevel) { mLogLevel = arLevel; }
 
-		Logger(LoggerI::Ptr arImplPtr);
+        template<typename ...Args>
+        void log(SinkType arSinkType, LogLevel arLevel, const char* arFile, int arLine, Args... arArgs){
+            if(arLevel < mLogLevel || arSinkType > mSinkArray.size() ){
+                return;
+            }
 
-		template<typename...Args>
-		void log(LogLevel arLevel, Args... arArgs)
-		{
-			print(logLevelToString(arLevel), arArgs...);
-		}
+            //default is std
+            if( mSinkArray[arSinkType] == nullptr){
+                arSinkType = SinkType::STD;
+            }
 
-	private:
-		LoggerI::Ptr mLogPtr;
-		std::stringstream mStringStream;
+            mSinkArray[arSinkType]->log(arLevel,arFile,arLine,arArgs...);
+        }
 
-		//vardiac templates unpack function arguments
-		void print();
+     private:
+        //by default add std sink
+        Logger();
 
-		template<typename First, typename...Rest>
-		void print(First arParam, Rest...arArgs)
-		{
-			mStringStream<<arParam;
-
-			print(arArgs...);
-		}
-
-		const char* logLevelToString(LogLevel arLevel)const;
-	};
-
+        LogLevel mLogLevel;
+        //using index as key to get Sink
+        std::array<Sink::Ptr, SinkType::NONE> mSinkArray;
+    };
 }
-
-

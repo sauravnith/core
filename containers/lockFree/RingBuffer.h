@@ -1,10 +1,10 @@
 #pragma once
 #include<atomic>
 #include<functional>
+#include<stdexcept>
 
 namespace core
 {
-    //used for message passing between two threads : spsc queue
     // On x86(strong memory model) will generate memory fence after every store
     // Use accquire release semantics to produce minimal fencing
     template<typename TMsg, size_t TSize = 16>
@@ -16,32 +16,15 @@ namespace core
         //having buffer size power 2 allows us to use cheaper & operation instead of modulo
         static_assert(((TSize & (TSize -1)) == 0), "BufferSize should be power of 2" );
 
+
         RingBuffer()=default;
-        //atomics are moveable
+
         RingBuffer(const RingBuffer& arBuffer)=delete;
         RingBuffer& operator=(const RingBuffer& arBuffer)=delete;
 
-        RingBuffer(RingBuffer&& arBuffer)noexcept
-                :RingBuffer()
-        {
-            swap(*this, arBuffer);
-        }
+        RingBuffer(RingBuffer&& arBuffer)=delete;
+        RingBuffer& operator=(RingBuffer&& arBuffer)=delete;
 
-        RingBuffer& operator=(RingBuffer&& arBuffer)noexcept
-        {
-            RingBuffer lTemp(std::move(arBuffer));//move constructor
-
-            swap(*this, lTemp);
-
-            return *this;
-        }
-
-        friend void swap(RingBuffer& arRHS, RingBuffer& arLHS)noexcept
-        {
-            std::swap(arRHS.mArray, arLHS.mArray);
-            arRHS.mReadIndex = arLHS.mReadIndex;
-            arRHS.mWriteIndex = arLHS.mWriteIndex;
-        }
 
         void push(const TMsg& arMsg)
         {
@@ -108,7 +91,6 @@ namespace core
         //how much it can store
         size_t capacity()const { return TSize;}
 
-        //how many elements it has
         size_t size()const { return mWriteIndex.load(std::memory_order_acquire) - mReadIndex.load(std::memory_order_acquire); }
 
         bool empty()const { return mWriteIndex.load(std::memory_order_acquire) == mReadIndex.load(std::memory_order_acquire); }

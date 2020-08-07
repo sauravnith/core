@@ -1,13 +1,14 @@
 #pragma once
 #include<atomic>
 #include<array>
+#include<stdexcept>
 
 /*
  * Bounded multiple producer single consumer queue
  * Use mMaxReadIdx to synchronize multiple producers
  * Producers need to commit data to be visible to consumer
  */
-template<typename TMsg, size_t TSize = 16>
+template<typename TMsg, std::size_t TSize = 16>
 class MpscQueue
 {
 public:
@@ -18,29 +19,11 @@ public:
     MpscQueue(const MpscQueue& arBuffer)=delete;
     MpscQueue& operator=(const MpscQueue& arBuffer)=delete;
 
-    MpscQueue(MpscQueue&& arBuffer)noexcept
-            :MpscQueue()
-    {
-        swap(*this, arBuffer);
-    }
+    MpscQueue(MpscQueue&& arBuffer)=delete;
+    MpscQueue& operator=(MpscQueue&& arBuffer)=delete;
 
-    MpscQueue& operator=(MpscQueue&& arBuffer)noexcept
-    {
-        MpscQueue lTemp(std::move(arBuffer));
-        swap(*this, lTemp);
-        return *this;
-    }
-
-    friend void swap(MpscQueue& arRHS, MpscQueue& arLHS)noexcept
-    {
-        std::swap(arRHS.mArray, arLHS.mArray);
-        arRHS.mReadIdx = arLHS.mReadIdx;
-        arRHS.mWriteIdx = arLHS.mWriteIdx;
-        arRHS.mMaxReadIdx = arLHS.mMaxReadIdx;
-    }
-
-    size_t capacity()const { return TSize;}
-    size_t size()const { return mWriteIdx.load(std::memory_order_acquire) - mReadIdx.load(std::memory_order_acquire); }
+    std::size_t capacity()const { return TSize;}
+    std::size_t size()const { return mWriteIdx.load(std::memory_order_acquire) - mReadIdx.load(std::memory_order_acquire); }
     bool empty()const { return mWriteIdx.load(std::memory_order_acquire) == mReadIdx.load(std::memory_order_acquire); }
     bool full()const { return size() == capacity(); }
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <optional>
 #include <array>
+#include <stdint.h>
+#include <stdexcept>
 
 namespace core
 {
@@ -21,32 +23,28 @@ namespace core
 
         CircularArray& operator=(CircularArray arArray)
         {
-            swap(*this, arArray);
+            mArray = std::move(arArray.mArray);
+            std::swap(mReadIndex,arArray.mReadIndex);
+            std::swap(mWriteIndex,arArray.mWriteIndex);
+
             return * this;
         }
-
 
         CircularArray(CircularArray&& arArray)noexcept:
                 CircularArray()//calling default constructor
         {
-            swap(*this, arArray);
+            mArray = std::move(arArray.mArray);
+            std::swap(mReadIndex,arArray.mReadIndex);
+            std::swap(mWriteIndex,arArray.mWriteIndex);
         }
 
         CircularArray& operator=(CircularArray&& arArray)noexcept
         {//no need for self assignment check
-            CircularArray lTemp(std::move(arArray));
 
-            swap(*this, lTemp);
-
+            mArray = std::move(arArray.mArray);
+            std::swap(mReadIndex,arArray.mReadIndex);
+            std::swap(mWriteIndex,arArray.mWriteIndex);
             return *this;
-        }
-
-        friend void swap (CircularArray& arRHS , CircularArray& arLHS) noexcept
-        {
-            //copy swap idiom
-            std::swap(arRHS.mArray, arLHS.mArray);
-            std::swap(arRHS.mReadIndex,arLHS.mReadIndex);
-            std::swap(arRHS.mWriteIndex,arLHS.mWriteIndex);
         }
 
 

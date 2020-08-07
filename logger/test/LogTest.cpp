@@ -4,19 +4,35 @@
  *  Created on: Apr 14, 2018
  *      Author: sauravsharma
  */
-#include <iostream>
-
-#include <logger/Log.h>
+#include <logger/Logger.h>
+#include <utils/asm.h>
+#include<thread>
+#include<chrono>
 
 using namespace core;
 
+
 int main ()
 {
-	FILE_LOG_DEBUG("yes it works ", 4," ",10);
-	FILE_LOG_INFO("yes it works ", 4," ",10.0);
-	FILE_LOG_WARN("yes it works ", 4," ",10.1);
-	FILE_LOG_ERROR("yes it works ", 4," ",10.2);
+    Logger::instance().setLogLevel(LogLevel::INFO);
+	STD_DEBUG("Hello World \n");
+   using namespace std::chrono_literals;
+
+    auto lStartTick = core::rdtscp();
+    std::this_thread::sleep_for(1s);
+    auto lEndTick = core::rdtscp();
+
+    STD_INFO("Ticks in a second", lEndTick - lStartTick);
+
+
+    FILE_DEBUG("should not write or crash");
+    FILE_INFO("should not write to std");
+    //TODO this is not a test case
+    //once logger is complete test all diff sinks and speed of writing
+    //need PerTimer and time class
 }
+
+
 
 
 

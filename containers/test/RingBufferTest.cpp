@@ -126,5 +126,4 @@ TEST(RingBufferTest,TestCase2)
     EXPECT_EQ(mRingBuffer.size(),0);
     EXPECT_EQ(mRingBuffer.empty(),true);
     EXPECT_EQ(mRingBuffer.capacity(),4);
-
 }

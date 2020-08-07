@@ -1,10 +1,12 @@
 #include <containers/CircularArray.h>
 #include <gtest/gtest.h>
+#include <stdexcept>
 
 struct TestMsg
 {
     int mIndex;
     int mVal;
+    //TODO add constructor and destructor and check operator = behaviour
 };
 
 

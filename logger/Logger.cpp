@@ -1,42 +1,14 @@
-/*
- * Logger.cpp
- *
- *  Created on: Apr 15, 2018
- *      Author: sauravsharma
- */
-
-#include "Logger.h"
+#include"Logger.h"
 
 using namespace core;
 
-Logger::Logger(LoggerI::Ptr arImplPtr):
-	mLogPtr(std::move(arImplPtr))
-{
 
+Logger::Logger():
+    mLogLevel{LogLevel::DEBUG}
+{
+    mSinkArray[SinkType::STD] = std::make_unique<StdSink<Sink>>();
 }
 
-void Logger::print()
-{
-	mStringStream<<"\n";
 
-	mLogPtr->log(mStringStream.str().c_str());
 
-	mStringStream.str("");
-}
 
-const char* Logger::logLevelToString(LogLevel arLevel)const
-{
-	switch(arLevel)
-	{
-	case LogLevel::DEBUG:
-		return "DEBUG: ";
-	case LogLevel::INFO:
-		return "INFO:  ";
-	case LogLevel::WARN:
-		return "WARN:  ";
-	case LogLevel::ERROR:
-		return "ERROR: ";
-	default:
-		return "";
-    }
-}
