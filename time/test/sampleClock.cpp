@@ -2,7 +2,7 @@
 #include<time/OSClock.h>
 #include<time/Profile.h>
 
-#include<log/Logger.h>
+#include<logger/Logger.h>
 
 using namespace core;
 

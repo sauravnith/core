@@ -34,7 +34,6 @@ namespace core
                 CircularArray()//calling default constructor
         {
             mArray = std::move(arArray.mArray);
-            std::swap(mArray, arArray.mArray);
             std::swap(mReadIndex,arArray.mReadIndex);
             std::swap(mWriteIndex,arArray.mWriteIndex);
         }

@@ -1,6 +1,7 @@
 #pragma once
 #include<atomic>
 #include<functional>
+#include<stdexcept>
 
 namespace core
 {
@@ -17,25 +18,13 @@ namespace core
 
 
         RingBuffer()=default;
-        //atomics are moveable
+
         RingBuffer(const RingBuffer& arBuffer)=delete;
         RingBuffer& operator=(const RingBuffer& arBuffer)=delete;
 
-        RingBuffer(RingBuffer&& arBuffer)noexcept
-                :RingBuffer()
-        {
-            std::swap(mArray, arBuffer.mArray);
-            std::swap(mReadIndex,arBuffer.mReadIndex);
-            std::swap(mWriteIndex,arBuffer.mWriteIndex);
-        }
+        RingBuffer(RingBuffer&& arBuffer)=delete;
+        RingBuffer& operator=(RingBuffer&& arBuffer)=delete;
 
-        RingBuffer& operator=(RingBuffer&& arBuffer)noexcept
-        {
-            mArray = std::move(arBuffer.mArray);
-            std::swap(mReadIndex,arBuffer.mReadIndex);
-            std::swap(mWriteIndex,arBuffer.mWriteIndex);
-
-        }
 
         void push(const TMsg& arMsg)
         {
