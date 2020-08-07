@@ -1,6 +1,8 @@
 #pragma once
 #include <optional>
 #include <array>
+#include <stdint.h>
+#include <stdexcept>
 
 namespace core
 {

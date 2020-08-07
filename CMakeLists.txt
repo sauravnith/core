@@ -1,5 +1,15 @@
 cmake_minimum_required(VERSION 3.2.3)
-  
+
+#-------------INSTALL---------------------
+if(NOT CMAKE_INSTALL_PREFIX)
+    SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
+message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "CMAKE_INSTALL_PREFIX: ${CPATH}")
+#-------------INSTALL---------------------
+
+
 #-------------DEPENDENCIES ---------------------
 if(DEFINED ENV{TOOLS_HOME})
   set(TOOLS_HOME "$ENV{TOOLS_HOME}")
@@ -7,7 +17,8 @@ else()
   set(TOOLS_HOME "/usr/local/Cellar")
 endif()
 
-message(STATUS "TOOLS_HOME:      ${TOOLS_HOME}")
+message(STATUS "TOOLS_HOME: ${TOOLS_HOME}")
+
 #-------------DEPENDENCIES---------------------
 
 #-------------COMPILER FLAGS---------------------
@@ -31,19 +42,22 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} ${COMMON_WARN}")
 
 #-------------CMAKE FALGS---------------------
 
+#-------------THIRDPARTY_CMAKE---------------------
+INCLUDE(cmake/GTEST.cmake)
+#-------------THIRDPARTY_CMAKE---------------------
+
 #-------------HEADERS---------------------
 
 include_directories(
  ${CMAKE_CURRENT_SOURCE_DIR}
- "${TOOLS_HOME}"
 )
 
 #-------------LINKER---------------------
 
 
-#link_directories(
-#  "${TOOLS_HOME}/lib64"
-#)
+link_directories(
+        "${GTEST_LIBRARY_DIR}"
+)
 
 #-------------UNIT TESTS---------------------
 

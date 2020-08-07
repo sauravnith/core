@@ -1,11 +1,12 @@
 ################### CIRCULAR ARRAY TEST ###############################################
 add_executable(CircularArrayTest test/CircularArrayTest.cpp)
 
+target_include_directories( CircularArrayTest PUBLIC ${GTEST_INCLUDE_DIR})
+
 target_link_libraries(CircularArrayTest
-  libgtest_main.a
-  libgtest.a
-  pthread
-)
+        ${GTEST_LIB}
+        pthread
+        )
 
 add_test(NAME CircularArrayTest COMMAND CircularArrayTest)
 

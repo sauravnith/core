@@ -1,5 +1,6 @@
 #include "TCPServer.h"
 #include<string.h>
+#include<stdexcept>
 
 using namespace core;
 

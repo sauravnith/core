@@ -1,5 +1,6 @@
 #include"Socket.h"
 #include<string.h>
+#include<stdexcept>
 
 using namespace core;
 

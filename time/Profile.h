@@ -1,35 +1,33 @@
 #pragma once
-#include"StopWatch.h"
+#include <utils/Types.h>
+#include <utils/asm.h>
 
 namespace core
 {
-    template<typename TClock>
     class Profile
     {
     public:
         template <typename TFunc>
-        nanos time(TFunc&& arFunc)
+        static Cycles time(TFunc arFunc)
         {
-            mStopWatch.start();
+            const auto lStart = rdtscp();
             arFunc();
-            mStopWatch.stop();
-            return mStopWatch.elapsed();
+            const auto lEnd = rdtscp();
+            return lEnd - lStart;
         }
 
         template<std::size_t Num, typename TFunc>
-        nanos averageTime(TFunc&& arFunc)
+        static Cycles averageTime(TFunc arFunc)
         {
             auto lTotal{0};
+            auto lNum{Num};
 
-            while(Num > 0)
+            while(lNum > 0)
             {
                 lTotal += time(arFunc);
-                --Num;
+                --lNum;
             }
             return lTotal/Num;
         }
-
-    private:
-        StopWatch<TClock> mStopWatch;
     };
 }
