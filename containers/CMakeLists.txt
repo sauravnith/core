@@ -11,12 +11,27 @@ target_link_libraries(CircularArrayTest
 add_test(NAME CircularArrayTest COMMAND CircularArrayTest)
 
 ################### RING BUFFER TEST ###############################################
-#add_executable(RingBufferTest test/RingBufferTest.cpp)
+add_executable(RingBufferTest test/RingBufferTest.cpp)
 
-#target_link_libraries(RingBufferTest
-#  libgtest_main.a
-#  libgtest.a
-#  pthread
-#)
+target_include_directories( RingBufferTest PUBLIC ${GTEST_INCLUDE_DIR})
+target_link_libraries(RingBufferTest
+  ${GTEST_LIB}
+  pthread
+)
 
-#add_test(NAME RingBufferTest COMMAND RingBufferTest)
+add_test(NAME RingBufferTest COMMAND RingBufferTest)
+
+################### MPSC Queue TEST ###############################################
+add_executable(MpscQueueTest test/MpscQueueTest.cpp)
+
+target_link_libraries(MpscQueueTest ${GTEST_LIB} pthread)
+
+add_test(NAME MpscQueueTest COMMAND MpscQueueTest)
+
+################### Performance Metric ###############################################
+add_executable(Perf test/Performance.cpp)
+
+target_link_libraries(Perf
+  pthread
+)
+

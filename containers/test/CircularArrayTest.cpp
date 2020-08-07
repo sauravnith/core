@@ -1,5 +1,6 @@
 #include <containers/CircularArray.h>
 #include <gtest/gtest.h>
+#include <stdexcept>
 
 struct TestMsg
 {

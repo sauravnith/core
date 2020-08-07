@@ -1,13 +1,21 @@
 #pragma once
 #include<atomic>
+#include<functional>
 
 namespace core
 {
-    //used for message passing between two threads : spsc queue
-    template<typename TMsg, size_t TSize = 10>
+    // On x86(strong memory model) will generate memory fence after every store
+    // Use accquire release semantics to produce minimal fencing
+    template<typename TMsg, size_t TSize = 16>
     class RingBuffer
     {
     public:
+        static_assert((TSize !=0),"Buffer size cannot be zero");
+
+        //having buffer size power 2 allows us to use cheaper & operation instead of modulo
+        static_assert(((TSize & (TSize -1)) == 0), "BufferSize should be power of 2" );
+
+
         RingBuffer()=default;
         //atomics are moveable
         RingBuffer(const RingBuffer& arBuffer)=delete;
@@ -27,42 +35,91 @@ namespace core
             std::swap(mReadIndex,arBuffer.mReadIndex);
             std::swap(mWriteIndex,arBuffer.mWriteIndex);
 
-            return *this;
         }
 
-        void put(TMsg& theMsg)
+        void push(const TMsg& arMsg)
         {
+            TMsg lMsg(arMsg);
 
+            emplace_push(std::move(lMsg));
         }
 
-        TMsg get();
+        void emplace_push(TMsg&& arMsg)
+        {
+            //using fetch_Add introduces a lock
+            auto lWriteIndex = mWriteIndex.load(std::memory_order_acquire);
 
-        template<typename TFunc>
-        bool consume_one(TFunc& arFunc);
+            auto lReadIndex = mReadIndex.load(std::memory_order_acquire);
 
-        template<typename TFunc>
-        bool consume_all(TFunc& arFunc);
+            //FULL
+            if(lWriteIndex - lReadIndex == capacity())
+            {
+                throw std::runtime_error("RingBuffer: No space available");
+            }
+
+            mArray[lWriteIndex & mBitMask ] = std::move(arMsg);
+
+            mWriteIndex.store(lWriteIndex + 1 , std::memory_order_release);
+        }
+
+        TMsg pop()
+        {
+            auto lWriteIndex = mWriteIndex.load(std::memory_order_acquire);
+
+            auto lReadIndex = mReadIndex.load(std::memory_order_acquire);
+
+            //EMPTY
+            if(lWriteIndex == lReadIndex)
+            {
+                throw std::runtime_error("RingBuffer: Empty");
+            }
+
+            TMsg lMsg(std::move(mArray[lReadIndex & mBitMask ]));
+
+            mReadIndex.store(lReadIndex + 1 , std::memory_order_release);
+
+            return lMsg;
+        }
+
+        using TFunc = std::function<void (const TMsg&)>;
+        void consume_one(TFunc& arFunc)
+        {
+            auto lWriteIndex = mWriteIndex.load(std::memory_order_acquire);
+
+            auto lReadIndex = mReadIndex.load(std::memory_order_acquire);
+
+            //EMPTY
+            if(lWriteIndex == lReadIndex)
+            {
+                throw std::runtime_error("RingBuffer: Empty");
+            }
+
+            arFunc(mArray[lReadIndex & mBitMask ]);
+
+            mReadIndex.store(lReadIndex + 1 , std::memory_order_release);
+        }
 
         //how much it can store
         size_t capacity()const { return TSize;}
 
-        //how many elements it has
-        size_t size()const { return mWriteIndex - mReadIndex; }
+        size_t size()const { return mWriteIndex.load(std::memory_order_acquire) - mReadIndex.load(std::memory_order_acquire); }
 
-        bool empty()const { return mWriteIndex == mReadIndex; }
+        bool empty()const { return mWriteIndex.load(std::memory_order_acquire) == mReadIndex.load(std::memory_order_acquire); }
+
         bool full()const { return size() == capacity(); }
 
     private:
-        constexpr int CACHE_LINE_SIZE = 64;//in bytes on x86
+        constexpr static size_t mBitMask = TSize -1;
 
-        __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::array<TMsg,TSize>mArray;
+        constexpr static int CACHE_LINE_SIZE{64};// on x86
 
-        __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int32_t> mReadIndex;
+        //aligning to prevent false sharing
+        alignas(CACHE_LINE_SIZE)std::array<TMsg,TSize>mArray;
 
-        __attribute__ ((aligned(CACHE_LINE_SIZE)))
-        std::atomic<int32_t> mWriteIndex;
+        alignas(CACHE_LINE_SIZE)std::atomic<int> mReadIndex{0};
+
+        alignas(CACHE_LINE_SIZE)std::atomic<int> mWriteIndex{0};
+
     };
 }
 

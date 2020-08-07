@@ -23,8 +23,7 @@ namespace core
 
         CircularArray& operator=(CircularArray arArray)
         {
-            //copy swap idiom
-            std::swap(mArray, arArray.mArray);
+            mArray = std::move(arArray.mArray);
             std::swap(mReadIndex,arArray.mReadIndex);
             std::swap(mWriteIndex,arArray.mWriteIndex);
 
@@ -34,7 +33,7 @@ namespace core
         CircularArray(CircularArray&& arArray)noexcept:
                 CircularArray()//calling default constructor
         {
-            //setting r value in a default state
+            mArray = std::move(arArray.mArray);
             std::swap(mArray, arArray.mArray);
             std::swap(mReadIndex,arArray.mReadIndex);
             std::swap(mWriteIndex,arArray.mWriteIndex);
@@ -42,12 +41,13 @@ namespace core
 
         CircularArray& operator=(CircularArray&& arArray)noexcept
         {//no need for self assignment check
+
             mArray = std::move(arArray.mArray);
             std::swap(mReadIndex,arArray.mReadIndex);
             std::swap(mWriteIndex,arArray.mWriteIndex);
-
             return *this;
         }
+
 
         size_t capacity()const { return mArray.size(); }
 

@@ -6,9 +6,7 @@ if(NOT CMAKE_INSTALL_PREFIX)
 endif()
 
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "CMAKE_INSTALL_PREFIX: ${CPATH}")
 #-------------INSTALL---------------------
-
 
 #-------------DEPENDENCIES ---------------------
 if(DEFINED ENV{TOOLS_HOME})
@@ -75,3 +73,7 @@ add_subdirectory(utils)
 add_subdirectory(transport)
 add_subdirectory(log)
 add_subdirectory(time)
+add_subdirectory(logger)
+
+
+
